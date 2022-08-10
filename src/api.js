@@ -64,4 +64,7 @@ export const unsubscribeFromTicker = (ticker) => {
 export const loadCoins = () =>
   fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
     .then((response) => response.json())
-    
+    .then((coinData) => {
+      const coins = Object.keys(coinData.Data)
+      return coins.map((coin) => coinData.Data[coin].Symbol)
+    })

@@ -26,7 +26,7 @@
             </div>
             <div class="flex bg-white shadow-md p-1 rounded-md flex-wrap">
               <span
-                v-for="(tickerSug, index) in this.ticker === ''
+                v-for="(coin, index) in this.ticker === ''
                   ? [
                       { Symbol: 'BTC' },
                       { Symbol: 'ETH' },
@@ -39,10 +39,10 @@
                       )
                       .slice(0, 4)"
                 :key="index"
-                @click="add(tickerSug.Symbol)"
+                @click="add(coin.Symbol)"
                 class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
               >
-                {{ tickerSug.Symbol }}
+                {{ coin.Symbol }}
               </span>
             </div>
             <div class="text-sm text-red-600" v-if="error">
@@ -183,7 +183,7 @@
 <script>
 // [] Добавить лоадер
 // [x] Добавить проверку на существование монетки
-// [] рефакторинг валидации на существование коина 
+// [] рефакторинг валидации на существование коина
 
 import { loadCoins, subscribeToTicker, unsubscribeFromTicker } from './api.js'
 export default {
@@ -243,9 +243,9 @@ export default {
     async function fetchCoins(coins) {
       const coinsData = await loadCoins()
 
-      for (let i in coinsData.Data) {
-        coins.push(coinsData.Data[i])
-      }
+      coinsData.forEach((coin) => {
+        coins.push({Symbol: coin})
+      })
     }
     fetchCoins(this.coinsList) //
 
