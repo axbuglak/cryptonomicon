@@ -101,22 +101,25 @@
             :key="t.name"
             @click="select(t)"
             :class="{
-              'border-4': selectedTicker === t
+              'border-4': selectedTicker === t,
+              'bg-red-400': t.error
             }"
-            class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
+            class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer relative"
           >
             <div class="px-4 py-5 sm:p-6 text-center">
               <dt class="text-sm font-medium text-gray-500 truncate">
                 {{ t.name }} - USD
               </dt>
-              <dd class="mt-1 text-3xl font-semibold text-gray-900">
+              <dd
+                class="mt-1 text-3xl font-semibold text-gray-900 transition-all"
+              >
                 {{ formatPrice(t.price) }}
               </dd>
             </div>
             <div class="w-full border-t border-gray-200"></div>
             <button
               @click.stop="removeHandler(t)"
-              class="flex items-center justify-center font-medium w-full bg-gray-100 px-4 py-4 sm:px-6 text-md text-gray-500 hover:text-gray-600 hover:bg-gray-200 hover:opacity-20 transition-all focus:outline-none"
+              class="flex items-center justify-center font-medium w-full bg-gray-100 px-4 py-4 sm:px-6 text-md text-gray-500 hover:text-gray-600 hover:bg-gray-200 transition-all focus:outline-none"
             >
               <svg
                 class="h-5 w-5"
@@ -186,6 +189,7 @@
 // [] рефакторинг валидации на существование коина
 
 import { loadCoins, subscribeToTicker, unsubscribeFromTicker } from './api.js'
+import { connectToChannel } from './broadcast.js'
 export default {
   name: 'App',
 
@@ -244,7 +248,7 @@ export default {
       const coinsData = await loadCoins()
 
       coinsData.forEach((coin) => {
-        coins.push({Symbol: coin})
+        coins.push({ Symbol: coin })
       })
     }
     fetchCoins(this.coinsList) //
@@ -263,11 +267,16 @@ export default {
     if (tickerData) {
       this.tickerList = JSON.parse(tickerData)
       this.tickerList.forEach((ticker) => {
-        subscribeToTicker(ticker.name, (price) => {
-          this.updateTickers(ticker.name, price)
+        subscribeToTicker(ticker.name, (price, error) => {
+          if (error) {
+            ticker.error = true
+          } else {
+            this.updateTickers(ticker.name, price)
+          }
         })
       })
     }
+    connectToChannel()
   },
 
   methods: {
@@ -278,14 +287,20 @@ export default {
           if (t === this.selectedTicker) {
             this.graph.push(price)
           }
-          t.price = price
+          if (price) {
+            t.price = price
+          } else {
+            t.price = '-'
+          }
         })
     },
     formatPrice(price) {
       if (price == '-') {
         return price
       }
-      return price > 1 ? price.toFixed(3) : price.toPrecision(3)
+      if (Number.isFinite(price)) {
+        return price > 1 ? price.toFixed(3) : price.toPrecision(3)
+      }
     },
 
     add(tickName) {
@@ -307,8 +322,12 @@ export default {
       }
 
       this.tickerList = [...this.tickerList, currentTicker]
-      subscribeToTicker(currentTicker.name, (price) => {
-        this.updateTickers(currentTicker.name, price)
+      subscribeToTicker(currentTicker.name, (price, error) => {
+        if (error) {
+          currentTicker.error = true
+        } else {
+          this.updateTickers(currentTicker.name, price)
+        }
       })
 
       this.ticker = ''

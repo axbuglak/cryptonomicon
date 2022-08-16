@@ -9,12 +9,18 @@ socket.addEventListener('message', (e) => {
   const {
     TYPE: type,
     FROMSYMBOL: currency,
-    PRICE: newPrice
+    PRICE: newPrice,
+    MESSAGE: message,
   } = JSON.parse(e.data)
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
+    if(message === 'INVALID_SUB') {
+      const handler = JSON.parse(e.data).PARAMETER
+      const coin = handler.split('~')[2]
+      const tickers = tickersHandlers.get(coin) ?? []
+      tickers.forEach(fn => fn(newPrice, message))
+    }
     return
   }
-
   const handlers = tickersHandlers.get(currency) ?? []
   handlers.forEach((fn) => fn(newPrice))
 })
@@ -60,6 +66,8 @@ export const unsubscribeFromTicker = (ticker) => {
   tickersHandlers.delete(ticker)
   unsubscribeFromTickerOnWs(ticker)
 }
+
+
 
 export const loadCoins = () =>
   fetch('https://min-api.cryptocompare.com/data/all/coinlist?summary=true')
