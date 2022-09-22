@@ -32,7 +32,7 @@ function sendToWebSocket(message) {
     socket.send(stringifiedMessage)
     return
   }
-
+ 
   socket.addEventListener(
     'open',
     () => {
@@ -76,3 +76,4 @@ export const loadCoins = () =>
       const coins = Object.keys(coinData.Data)
       return coins.map((coin) => coinData.Data[coin].Symbol)
     })
+
