@@ -1,4 +1,4 @@
-const tickersHandlers = new Map() // {}
+const tickersHandlers = new Map()
 const socket = new WebSocket(
   `wss://streamer.cryptocompare.com/v2?api_key=3e6aa97e236e7ac4ec49a3ffb957e72ea388fecda806ed6161cba08a68b0a429`
 )

@@ -40,7 +40,7 @@
         <div class="text-sm text-red-600" v-if="error">
           {{ error }}
         </div>
-        <add-button @click="add(ticker)" />
+        <add-button @onAdd-ticker="add(ticker)" />
       </div>
     </div>
     <div>
