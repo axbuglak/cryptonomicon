@@ -1,6 +1,6 @@
 # Cryptonomicon on Vue3.js and tailwindcss
-Crypto Dashboard
-My first pet-project on Vue.js
+- Crypto Dashboard
+- My first pet-project on Vue.js
 
 
 ## Project setup
